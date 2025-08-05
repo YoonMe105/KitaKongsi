@@ -6,6 +6,9 @@
 </head>
 <body>
     <h1>📦 Donate Food</h1>
+    <button id="connectWallet">🔌 Connect Wallet</button>
+    <p id="walletAddress"></p>
+
     <form id="donationForm">
         <label>Food:</label><br>
         <input type="text" id="food"><br><br>
@@ -62,6 +65,23 @@
 
         // Initial load
         loadDonations();
+
+        const connectBtn = document.getElementById("connectWallet");
+        const walletAddress = document.getElementById("walletAddress");
+
+        connectBtn.onclick = async () => {
+            if (window.ethereum) {
+            try {
+                const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                walletAddress.textContent = `Connected: ${accounts[0]}`;
+                console.log("Connected to:", accounts[0]);
+            } catch (err) {
+                console.error("User rejected connection", err);
+            }
+            } else {
+            alert("MetaMask not found. Please install it.");
+            }
+        };
     </script>
 </body>
 </html>
