@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Food Donation Blockchain</title>
+</head>
+<body>
+    <h1>📦 Donate Food</h1>
+    <form id="donationForm">
+        <label>Food:</label><br>
+        <input type="text" id="food"><br><br>
+
+        <label>Quantity:</label><br>
+        <input type="text" id="quantity"><br><br>
+
+        <label>Location:</label><br>
+        <input type="text" id="location"><br><br>
+
+        <button type="submit">Donate</button>
+    </form>
+
+    <h2>📜 Blockchain Donations</h2>
+    <ul id="donationList"></ul>
+
+    <script>
+        // Handle donation form submit
+        document.getElementById('donationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const food = document.getElementById('food').value;
+            const quantity = document.getElementById('quantity').value;
+            const location = document.getElementById('location').value;
+
+            fetch('/donate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({food, quantity, location})
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || data.error);
+                loadDonations(); // Refresh donation list
+            });
+        });
+
+        // Load donation chain
+        function loadDonations() {
+            fetch('/donations')
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('donationList');
+                    list.innerHTML = '';
+                    data.forEach(block => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>Index:</strong> ${block.index || '?'}<br>
+                                        <strong>Data:</strong> ${JSON.stringify(block.data)}<br>
+                                        <strong>Previous Hash:</strong> ${block.previous_hash || 'N/A'}`;
+                        list.appendChild(li);
+                    });
+                });
+        }
+
+        // Initial load
+        loadDonations();
+    </script>
+</body>
+</html>
