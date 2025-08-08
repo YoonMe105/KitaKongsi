@@ -1,57 +1,32 @@
+<!DOCTYPE html>
+<html>
 <head>
-  <!-- Existing head content -->
-  <style>
-    .badge { padding: 4px 8px; border-radius: 6px; color: white; }
-    .food { background-color: #28a745; }
-    .money { background-color: #007bff; }
-    .genesis { background-color: #6c757d; }
-  </style>
+    <title>History</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+        }
+    </style>
 </head>
-<body>
-  <h1>📜 Blockchain Donation History</h1>
+<body class="bg-light">
+<a href="{{ url_for('home') }}" class="btn btn-success rounded-pill back-btn">🏠 Home</a>
 
-  <!-- Filters -->
-
-  <table id="donationTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Type</th>
-        <th>Sender</th>
-        <th>Receiver</th>
-        <th>Data</th>
-        <th>Timestamp</th>
-        <th>Hash</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% if donations %}
-        {% for block in donations %}
-        <tr>
-          <td>{{ block.index }}</td>
-          <td class="type">
-            <span class="badge {{ block.donation_type }}">{{ block.donation_type | capitalize }}</span>
-          </td>
-          <td class="sender">{{ block.sender }}</td>
-          <td class="receiver">{{ block.receiver }}</td>
-          <td class="data">
-            {% if block.donation_type == "money" %}
-              {{ block.data.amount }} {{ block.data.currency }}
-            {% elif block.donation_type == "food" %}
-              {{ block.data.food }} ({{ block.data.quantity }}) @ {{ block.data.location }}
-            {% else %}
-              {{ block.data }}
-            {% endif %}
-          </td>
-          <td class="timestamp">{{ block.timestamp | datetimeformat }}</td>
-          <td class="hash">{{ block.hash }}</td>
-        </tr>
-        {% endfor %}
-      {% else %}
-        <tr><td colspan="7" style="text-align:center;">No donations yet.</td></tr>
-      {% endif %}
-    </tbody>
-  </table>
-
-  <!-- Existing JS remains unchanged -->
+<div class="container py-5">
+    <h2>Blockchain Donation History</h2>
+    {% for block in blockchain %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">#{{ block.index }} - {{ block.donation_type }}</h5>
+                <p class="mb-1"><strong>From:</strong> {{ block.sender or "N/A" }}</p>
+                <p class="mb-1"><strong>To:</strong> {{ block.receiver or "N/A" }}</p>
+                <p class="mb-1"><strong>Data:</strong> {{ block.data }}</p>
+                <small class="text-muted">{{ block.timestamp }}</small>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 </body>
+</html>

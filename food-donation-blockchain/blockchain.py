@@ -6,14 +6,15 @@ class DonationBlock:
     def __init__(self, index, timestamp, donation_type, sender, receiver, data, previous_hash):
         self.index = index
         self.timestamp = timestamp
-        self.donation_type = donation_type  # "food" or "money"
+        self.donation_type = donation_type  # "food", "money", "receive", "money_request", "food_request", "genesis", etc.
         self.sender = sender
         self.receiver = receiver
-        self.data = data  # Quantity or amount
+        self.data = data  # flexible dict or string
         self.previous_hash = previous_hash
         self.hash = self.calculate_hash()
 
     def calculate_hash(self):
+        # Ensure deterministic serialization of data
         block_string = json.dumps({
             "index": self.index,
             "timestamp": self.timestamp,
@@ -22,7 +23,7 @@ class DonationBlock:
             "receiver": self.receiver,
             "data": self.data,
             "previous_hash": self.previous_hash
-        }, sort_keys=True).encode()
+        }, sort_keys=True, default=str).encode()
         return hashlib.sha256(block_string).hexdigest()
 
     def to_dict(self):
