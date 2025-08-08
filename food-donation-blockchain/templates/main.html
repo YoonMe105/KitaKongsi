@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to Food & Money Donation Blockchain</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.2em;
+    }
+    p {
+      font-size: 1.5em;
+      margin-bottom: 1.5em;
+      color: #555;
+    }
+    a {
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 10px;
+      font-size: 1.2em;
+      text-decoration: none;
+      color: white;
+      background-color: #28a745;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+    a:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌍 Welcome to the Donation Blockchain</h1>
+  <p>Donate or Receive Food & Money Securely with Transparency</p>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div style="color: green; font-weight: bold;">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div>
+    <a href="/donate">🍽️ Donate Food</a>
+    <a href="/donate-money">💸 Donate Money</a>
+    <a href="/receive">🎁 Receive</a>
+    <a href="/history">📜 View Blockchain</a>
+  </div>
+</body>
+</html>
