@@ -1,120 +1,115 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
-from datetime import datetime
-from blockchain import Blockchain
+from flask import Flask, render_template, request, redirect, url_for, flash
+import time
 
 app = Flask(__name__)
 app.secret_key = "secret"
 
-blockchain = Blockchain()
+# Blockchain data
+blockchain = []
+remaining_money = 0.0
+food_stock = {}  # {food_name: quantity}
 
-@app.route('/')
-def index():
-    return render_template('main.html')
-
-@app.route('/donate', methods=['GET', 'POST'])
-def donate():
-    if request.method == 'GET':
-        return render_template('donate.html')
-
-    data = request.get_json()
-    food = data.get("food")
-    quantity = data.get("quantity")
-    location = data.get("location")
-
-    if not food or not quantity or not location:
-        return jsonify({"error": "Missing food, quantity, or location."}), 400
-
-    donation_data = {
-        "food": food,
-        "quantity": quantity,
-        "location": location
+# Block structure
+def create_block(index, timestamp, donation_type, sender, receiver, amount_or_quantity, item_name=None):
+    return {
+        "index": index,
+        "timestamp": timestamp,
+        "donation_type": donation_type,  # "money" or "food"
+        "sender": sender,
+        "receiver": receiver,
+        "amount_or_quantity": amount_or_quantity,
+        "item_name": item_name
     }
 
-    block = blockchain.add_block(
-        donation_type="food",
-        sender="anonymous",
-        receiver=location,
-        data=donation_data
-    )
+# Home
+@app.route("/")
+def home():
+    return render_template("index.html", money_balance=remaining_money, food_stock=food_stock)
 
-    return jsonify({"message": f"Food donation recorded in block #{block.index}!"})
-
-@app.route('/donations')
-def donations():
-    return jsonify(blockchain.to_list())
-
-@app.route('/history')
-def history():
-    return render_template('history.html', donations=blockchain.to_list())
-
-@app.route('/receive', methods=['GET', 'POST'])
-def receive():
-    if request.method == 'POST':
-        donation_type = request.form['donation_type']
-        wallet_address = request.form['wallet_address'].strip()
-
-        if not wallet_address.startswith("0x") or len(wallet_address) != 42:
-            flash("Invalid wallet address. Please use a valid crypto address (e.g., MetaMask).")
-            return redirect(url_for('receive'))
-
-        flash(f"Your request to receive {donation_type} has been submitted! A donor will be matched soon.")
-        return redirect(url_for('receive'))
-
-    return render_template('receive.html')
-
-@app.route('/donate-money', methods=['GET', 'POST'])
+# Donate money
+@app.route("/donate_money", methods=["GET", "POST"])
 def donate_money():
-    if request.method == 'POST':
-        sender = request.form['sender'].strip()
-        receiver = request.form['receiver'].strip()
-        amount = request.form['amount'].strip()
+    global remaining_money
+    if request.method == "POST":
+        sender = request.form["sender"]
+        amount = float(request.form["amount"])
+        if amount <= 0:
+            flash("Amount must be greater than zero.")
+            return redirect(url_for("donate_money"))
+        block = create_block(len(blockchain) + 1, time.strftime("%Y-%m-%d %H:%M:%S"),
+                             "money", sender, None, amount)
+        blockchain.append(block)
+        remaining_money += amount
+        flash("Money donation recorded successfully!")
+        return redirect(url_for("home"))
+    return render_template("donate_money.html")
 
-        # Validate Ethereum addresses
-        if not (sender.startswith("0x") and len(sender) == 42):
-            flash("Invalid sender wallet address.")
-            return redirect(url_for('donate_money'))
+# Donate food
+@app.route("/donate_food", methods=["GET", "POST"])
+def donate_food():
+    global food_stock
+    if request.method == "POST":
+        sender = request.form["sender"]
+        item_name = request.form["item_name"]
+        quantity = int(request.form["quantity"])
+        if quantity <= 0:
+            flash("Quantity must be greater than zero.")
+            return redirect(url_for("donate_food"))
+        block = create_block(len(blockchain) + 1, time.strftime("%Y-%m-%d %H:%M:%S"),
+                             "food", sender, None, quantity, item_name)
+        blockchain.append(block)
+        food_stock[item_name] = food_stock.get(item_name, 0) + quantity
+        flash("Food donation recorded successfully!")
+        return redirect(url_for("home"))
+    return render_template("donate_food.html")
 
-        if not (receiver.startswith("0x") and len(receiver) == 42):
-            flash("Invalid receiver wallet address.")
-            return redirect(url_for('donate_money'))
+# Request money
+@app.route("/request_money", methods=["GET", "POST"])
+def request_money():
+    global remaining_money
+    if request.method == "POST":
+        receiver = request.form["receiver"]
+        request_amount = float(request.form["amount"])
+        if request_amount <= 0:
+            flash("Amount must be greater than zero.")
+            return redirect(url_for("request_money"))
+        if request_amount > remaining_money:
+            flash("Not enough funds available.")
+            return redirect(url_for("request_money"))
+        block = create_block(len(blockchain) + 1, time.strftime("%Y-%m-%d %H:%M:%S"),
+                             "money_request", None, receiver, request_amount)
+        blockchain.append(block)
+        remaining_money -= request_amount
+        flash("Money request fulfilled!")
+        return redirect(url_for("home"))
+    return render_template("request_money.html", available_money=remaining_money)
 
-        try:
-            amount_float = float(amount)
-            if amount_float <= 0:
-                flash("Donation amount must be a positive number.")
-                return redirect(url_for('donate_money'))
-        except ValueError:
-            flash("Invalid donation amount.")
-            return redirect(url_for('donate_money'))
+# Request food
+@app.route("/request_food", methods=["GET", "POST"])
+def request_food():
+    global food_stock
+    if request.method == "POST":
+        receiver = request.form["receiver"]
+        item_name = request.form["item_name"]
+        quantity = int(request.form["quantity"])
+        if quantity <= 0:
+            flash("Quantity must be greater than zero.")
+            return redirect(url_for("request_food"))
+        if item_name not in food_stock or quantity > food_stock[item_name]:
+            flash("Not enough stock for this food item.")
+            return redirect(url_for("request_food"))
+        block = create_block(len(blockchain) + 1, time.strftime("%Y-%m-%d %H:%M:%S"),
+                             "food_request", None, receiver, quantity, item_name)
+        blockchain.append(block)
+        food_stock[item_name] -= quantity
+        flash("Food request fulfilled!")
+        return redirect(url_for("home"))
+    return render_template("request_food.html", food_items=food_stock)
 
-        donation_data = {
-            "amount": amount,
-            "currency": "ETH"
-        }
+# History
+@app.route("/history")
+def history():
+    return render_template("history.html", blockchain=blockchain)
 
-        block = blockchain.add_block(
-            donation_type="money",
-            sender=sender,
-            receiver=receiver,
-            data=donation_data
-        )
-
-        flash(f"{amount} ETH donated successfully from {sender} to {receiver}!")
-        return redirect(url_for('index'))
-
-    return render_template('donate_money.html')
-
-@app.route('/blockchain_data')
-def blockchain_data():
-    return jsonify([
-        block.to_dict()
-        for block in blockchain.chain
-        if block.donation_type != "genesis"
-    ])
-
-@app.template_filter('datetimeformat')
-def datetimeformat(value):
-    return datetime.fromtimestamp(value).strftime('%Y-%m-%d %H:%M:%S')
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

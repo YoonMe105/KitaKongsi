@@ -1,57 +1,27 @@
-<head>
-  <!-- Existing head content -->
-  <style>
-    .badge { padding: 4px 8px; border-radius: 6px; color: white; }
-    .food { background-color: #28a745; }
-    .money { background-color: #007bff; }
-    .genesis { background-color: #6c757d; }
-  </style>
-</head>
-<body>
-  <h1>📜 Blockchain Donation History</h1>
-
-  <!-- Filters -->
-
-  <table id="donationTable">
-    <thead>
-      <tr>
-        <th>#</th>
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('home') }}" class="back-button">← Back to Home</a>
+<h1>Donation & Request History</h1>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Index</th>
+        <th>Timestamp</th>
         <th>Type</th>
         <th>Sender</th>
         <th>Receiver</th>
-        <th>Data</th>
-        <th>Timestamp</th>
-        <th>Hash</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% if donations %}
-        {% for block in donations %}
-        <tr>
-          <td>{{ block.index }}</td>
-          <td class="type">
-            <span class="badge {{ block.donation_type }}">{{ block.donation_type | capitalize }}</span>
-          </td>
-          <td class="sender">{{ block.sender }}</td>
-          <td class="receiver">{{ block.receiver }}</td>
-          <td class="data">
-            {% if block.donation_type == "money" %}
-              {{ block.data.amount }} {{ block.data.currency }}
-            {% elif block.donation_type == "food" %}
-              {{ block.data.food }} ({{ block.data.quantity }}) @ {{ block.data.location }}
-            {% else %}
-              {{ block.data }}
-            {% endif %}
-          </td>
-          <td class="timestamp">{{ block.timestamp | datetimeformat }}</td>
-          <td class="hash">{{ block.hash }}</td>
-        </tr>
-        {% endfor %}
-      {% else %}
-        <tr><td colspan="7" style="text-align:center;">No donations yet.</td></tr>
-      {% endif %}
-    </tbody>
-  </table>
-
-  <!-- Existing JS remains unchanged -->
-</body>
+        <th>Amount/Quantity</th>
+        <th>Item</th>
+    </tr>
+    {% for block in blockchain %}
+    <tr>
+        <td>{{ block.index }}</td>
+        <td>{{ block.timestamp }}</td>
+        <td>{{ block.donation_type }}</td>
+        <td>{{ block.sender or "-" }}</td>
+        <td>{{ block.receiver or "-" }}</td>
+        <td>{{ block.amount_or_quantity }}</td>
+        <td>{{ block.item_name or "-" }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

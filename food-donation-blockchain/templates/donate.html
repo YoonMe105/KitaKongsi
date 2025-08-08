@@ -2,49 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Food Donation Blockchain</title>
+    <title>Donate Food</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-
-        h1, h2 {
-            text-align: center;
-        }
-
-        form {
-            margin: 0 auto;
-            max-width: 400px;
-        }
-
-        input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            margin-bottom: 12px;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-        }
-
-        table {
-            margin: 30px auto;
-            border-collapse: collapse;
-            width: 95%;
-        }
-
-        th, td {
-            padding: 8px 12px;
-            border: 1px solid #aaa;
-            text-align: left;
-        }
-
-        th {
-            background-color: #eee;
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        form { margin: 0 auto; max-width: 400px; display:flex; flex-direction:column; gap:8px; }
+        input, button { padding:8px; }
+        table { margin-top:20px; width:100%; border-collapse: collapse; }
     </style>
 </head>
 <body>
@@ -54,7 +17,7 @@
         <input type="text" id="food" required>
 
         <label>Quantity:</label>
-        <input type="text" id="quantity" required>
+        <input type="number" id="quantity" min="0.01" step="0.01" required>
 
         <label>Location:</label>
         <input type="text" id="location" required>
@@ -62,46 +25,9 @@
         <button type="submit">Donate</button>
     </form>
 
-    <h2>📜 Blockchain Donations</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Index</th>
-                <th>Food</th>
-                <th>Quantity</th>
-                <th>Location</th>
-                <th>Previous Hash</th>
-            </tr>
-        </thead>
-        <tbody id="donationTableBody">
-        </tbody>
-    </table>
-
     <script>
-        function loadDonations() {
-            fetch('/donations')
-                .then(res => res.json())
-                .then(data => {
-                    const tbody = document.getElementById('donationTableBody');
-                    tbody.innerHTML = '';
-                    data.forEach(block => {
-                        const tr = document.createElement('tr');
-                        const d = block.data;
-                        tr.innerHTML = `
-                            <td>${block.index ?? '?'}</td>
-                            <td>${d.food ?? '-'}</td>
-                            <td>${d.quantity ?? '-'}</td>
-                            <td>${d.location ?? '-'}</td>
-                            <td>${block.previous_hash ?? '-'}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                });
-        }
-
-        document.getElementById('donationForm').addEventListener('submit', function(e) {
+        document.getElementById('donationForm').addEventListener('submit', function(e){
             e.preventDefault();
-
             const food = document.getElementById('food').value.trim();
             const quantity = document.getElementById('quantity').value.trim();
             const location = document.getElementById('location').value.trim();
@@ -110,18 +36,11 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ food, quantity, location })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message || data.error);
-                loadDonations();
+            }).then(r=>r.json()).then(j=>{
+                alert(j.message || j.error);
                 document.getElementById('donationForm').reset();
             });
         });
-
-        // Load initially and auto-refresh every 10 seconds
-        loadDonations();
-        setInterval(loadDonations, 10000);
     </script>
 </body>
 </html>
