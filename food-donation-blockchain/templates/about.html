@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero-section text-center text-black">
+    <img src="{{ url_for('static', filename='img/kitakongsi.png') }}" alt="logo" class="logo">
+    <h1>KitaKongsi</h1>
+    <p>Together We Share. Together We Care.</p>
+    <p class="lead">Helping those in need with food and financial support through a transparent blockchain system.</p>
+    <a href="{{ url_for('donate') }}" class="btn btn-warning btn-lg mt-3">Donate Now</a>
+    <a href="{{ url_for('request_help') }}" class="btn btn-warning btn-lg mt-3">Get Donation</a>
+</div>
+
+<div class="row mt-5 text-center">
+    <div class="col-md-4">
+        <i class="fas fa-utensils fa-3x text-success"></i>
+        <h4>Food Donations</h4>
+        <p>Your donations help ensure no one goes hungry by delivering nourishment directly to those who need it most, improving their health and wellbeing.</p>
+    </div>
+    <div class="col-md-4">
+        <i class="fas fa-hand-holding-usd fa-3x text-primary"></i>
+        <h4>Money Donations</h4>
+        <p>Contribute funds to support families in covering urgent expenses such as medical bills, rent, utilities, and education. </p>
+    </div>
+    <div class="col-md-4">
+        <i class="fas fa-link fa-3x text-info"></i>
+        <h4>Blockchain Transparency</h4>
+        <p>Our platform uses blockchain technology to securely record every donation transaction. This means all contributions are traceable, immutable, and publicly verifiable—ensuring complete transparency and accountability. </p>
+    </div>
+</div>
+{% endblock %}

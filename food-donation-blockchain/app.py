@@ -1,127 +1,114 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-import time
-import json
-import os
+from blockchain import Blockchain
 
 app = Flask(__name__)
-app.secret_key = "secret"
+app.secret_key = "supersecret"
 
-# Blockchain
-blockchain = []
-money_balance = 0
-food_balances = {}  # { "Rice": 10, "Noodles": 5 }
+blockchain = Blockchain()
 
-DATA_FILE = "blockchain_data.json"
-
-# -------- Blockchain Functions --------
-def load_data():
-    global blockchain, money_balance, food_balances
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            data = json.load(f)
-            blockchain = data.get("blockchain", [])
-            money_balance = data.get("money_balance", 0)
-            food_balances = data.get("food_balances", {})
-    else:
-        blockchain.clear()
-        money_balance = 0
-        food_balances.clear()
-
-def save_data():
-    with open(DATA_FILE, "w") as f:
-        json.dump({
-            "blockchain": blockchain,
-            "money_balance": money_balance,
-            "food_balances": food_balances
-        }, f)
-
-def add_block(donation_type, sender, receiver, data):
-    block = {
-        "index": len(blockchain) + 1,
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "donation_type": donation_type,
-        "sender": sender,
-        "receiver": receiver,
-        "data": data
-    }
-    blockchain.append(block)
-    save_data()
-
-# -------- Routes --------
 @app.route("/")
-def home():
-    return render_template("home.html", 
-                           money_balance=money_balance, 
-                           food_balances=food_balances)
+def about():
+    return render_template("about.html")
 
-@app.route("/donate_money", methods=["GET", "POST"])
-def donate_money():
-    global money_balance
+@app.route("/donate", methods=["GET", "POST"])
+def donate():
     if request.method == "POST":
-        sender = request.form["name"]
-        amount = float(request.form["amount"])
-        if amount <= 0:
-            flash("Invalid amount.", "danger")
-            return redirect(url_for("donate_money"))
-        money_balance += amount
-        add_block("money", sender, "", {"amount": amount})
-        flash("Money donation successful!", "success")
-        return redirect(url_for("home"))
-    return render_template("form.html", page_type="donate_money")
+        donation_type = request.form.get("donation_type")
+        if not donation_type:
+            flash("Donation type is required.", "danger")
+            return redirect(url_for("donate"))
 
-@app.route("/request_money", methods=["GET", "POST"])
-def request_money():
-    global money_balance
+        if donation_type == "money":
+            amount = request.form.get("amount")
+            try:
+                amount = float(amount)
+                if amount <= 0:
+                    raise ValueError
+                blockchain.add_money_donation(amount)
+                flash("Thank you for donating money!", "success")
+            except (ValueError, TypeError):
+                flash("Please enter a valid amount greater than zero.", "danger")
+
+        elif donation_type == "food":
+            food_type = request.form.get("food_type")
+            quantity = request.form.get("quantity")
+            if not food_type or not quantity:
+                flash("Please enter food type and quantity.", "danger")
+                return redirect(url_for("donate"))
+            try:
+                quantity = int(quantity)
+                if quantity <= 0:
+                    raise ValueError
+                blockchain.add_food_donation(food_type, quantity)
+                flash("Thank you for donating food!", "success")
+            except (ValueError, TypeError):
+                flash("Please enter a valid quantity greater than zero.", "danger")
+
+        else:
+            flash("Invalid donation type selected.", "danger")
+
+        return redirect(url_for("donate"))
+
+    return render_template(
+        "donate.html",
+        money_balance=blockchain.money_balance,
+        food_balance=blockchain.food_balance,
+    )
+
+@app.route("/request", methods=["GET", "POST"])
+def request_help():
     if request.method == "POST":
-        receiver = request.form["name"]
-        amount = float(request.form["amount"])
-        if amount <= 0 or amount > money_balance:
-            flash("Invalid request amount.", "danger")
-            return redirect(url_for("request_money"))
-        money_balance -= amount
-        add_block("money_request", "", receiver, {"amount": amount})
-        flash("Money request fulfilled!", "success")
-        return redirect(url_for("home"))
-    return render_template("form.html", page_type="request_money", max_money=money_balance)
+        request_type = request.form.get("request_type")
+        if not request_type:
+            flash("Request type is required.", "danger")
+            return redirect(url_for("request_help"))
 
-@app.route("/donate_food", methods=["GET", "POST"])
-def donate_food():
-    global food_balances
-    food_types = ["Rice", "Noodles", "Canned Food", "Biscuits", "Milk"]
-    if request.method == "POST":
-        sender = request.form["name"]
-        food_type = request.form["food_type"]
-        quantity = int(request.form["quantity"])
-        if quantity <= 0:
-            flash("Invalid quantity.", "danger")
-            return redirect(url_for("donate_food"))
-        food_balances[food_type] = food_balances.get(food_type, 0) + quantity
-        add_block("food", sender, "", {"type": food_type, "quantity": quantity})
-        flash("Food donation successful!", "success")
-        return redirect(url_for("home"))
-    return render_template("form.html", page_type="donate_food", food_types=food_types)
+        if request_type == "money":
+            amount = request.form.get("amount")
+            try:
+                amount = float(amount)
+                if amount <= 0:
+                    raise ValueError
+                if amount <= blockchain.money_balance:
+                    blockchain.money_balance -= amount
+                    flash(f"Money request approved: {amount} units sent!", "success")
+                else:
+                    flash("Not enough funds available!", "danger")
+            except (ValueError, TypeError):
+                flash("Please enter a valid amount greater than zero.", "danger")
 
-@app.route("/request_food", methods=["GET", "POST"])
-def request_food():
-    global food_balances
-    available_types = [ftype for ftype, qty in food_balances.items() if qty > 0]
-    if request.method == "POST":
-        receiver = request.form["name"]
-        food_type = request.form["food_type"]
-        quantity = int(request.form["quantity"])
-        if food_type not in food_balances or quantity <= 0 or quantity > food_balances[food_type]:
-            flash("Invalid request.", "danger")
-            return redirect(url_for("request_food"))
-        food_balances[food_type] -= quantity
-        add_block("food_request", "", receiver, {"type": food_type, "quantity": quantity})
-        flash("Food request fulfilled!", "success")
-        return redirect(url_for("home"))
-    return render_template("form.html", page_type="request_food", food_types=available_types)
+        elif request_type == "food":
+            food_type = request.form.get("food_type")
+            quantity = request.form.get("quantity")
+            if not food_type or not quantity:
+                flash("Please enter food type and quantity.", "danger")
+                return redirect(url_for("request_help"))
+            try:
+                quantity = int(quantity)
+                if quantity <= 0:
+                    raise ValueError
+                if (
+                    food_type in blockchain.food_balance
+                    and quantity <= blockchain.food_balance[food_type]
+                ):
+                    blockchain.food_balance[food_type] -= quantity
+                    flash(f"Food request approved: {quantity} x {food_type} sent!", "success")
+                else:
+                    flash("Not enough food available!", "danger")
+            except (ValueError, TypeError):
+                flash("Please enter a valid quantity greater than zero.", "danger")
 
-@app.route("/history")
-def history():
-    return render_template("history.html", blockchain=blockchain)
+        else:
+            flash("Invalid request type selected.", "danger")
+
+        return redirect(url_for("request_help"))
+
+    return render_template(
+        "request.html",
+        money_balance=blockchain.money_balance,
+        food_balance=blockchain.food_balance,
+    )
+
 
 if __name__ == "__main__":
-    load_data()
     app.run(debug=True)

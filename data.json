@@ -1,0 +1,15 @@
+{
+  "chain": [
+    {
+      "index": 0,
+      "timestamp": "2025-08-08 19:36:02",
+      "donation_type": "genesis",
+      "sender": "system",
+      "data": {
+        "msg": "genesis"
+      },
+      "previous_hash": "0",
+      "hash": "2efa4aaf2330688d41bde0157f7a91112ed1d0a0178d135e35e3ca93ed4da8d4"
+    }
+  ]
+}

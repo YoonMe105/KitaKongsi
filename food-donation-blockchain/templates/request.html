@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; margin-top: 20px;">
+  <img src="{{ url_for('static', filename='img/kitakongsi.png') }}" alt="logo1" />
+</div>
+<h2>Request Help</h2>
+<form method="post" class="mt-4">
+    <div class="mb-3">
+        <label>Request Type</label>
+        <select name="request_type" class="form-select" id="requestType">
+            <option value="money">Money</option>
+            <option value="food">Food</option>
+        </select>
+    </div>
+
+    <div id="moneyRequest" class="mb-3">
+        <label>Amount</label>
+        <input type="number" name="amount" step="0.01" class="form-control">
+    </div>
+
+    <div id="foodRequest" class="mb-3 d-none">
+        <label>Food Type</label>
+        <input type="text" name="food_type" class="form-control">
+        <label class="mt-2">Quantity</label>
+        <input type="number" name="quantity" class="form-control">
+    </div>
+
+    <button class="btn btn-primary mt-3" type="submit">Request</button>
+</form>
+
+<h4 class="mt-5">Current Balances</h4>
+<p>Money: {{ money_balance }}</p>
+<p>Food: {{ food_balance }}</p>
+
+<script>
+document.getElementById("requestType").addEventListener("change", function(){
+    document.getElementById("moneyRequest").classList.toggle("d-none", this.value !== "money");
+    document.getElementById("foodRequest").classList.toggle("d-none", this.value !== "food");
+});
+</script>
+{% endblock %}
