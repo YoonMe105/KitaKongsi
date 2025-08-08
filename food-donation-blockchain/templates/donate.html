@@ -9,6 +9,7 @@
     <div class="mb-3">
         <label>Donation Type</label>
         <select name="donation_type" class="form-select" id="donationType">
+            <option value="money">Select Type</option>
             <option value="money">Money</option>
             <option value="food">Food</option>
         </select>
@@ -24,6 +25,26 @@
         <input type="text" name="food_type" class="form-control">
         <label class="mt-2">Quantity</label>
         <input type="number" name="quantity" class="form-control">
+    </div>
+
+    <div class="mb-3"> 
+        <label for="location">Location</label>
+        <select name="location" class="form-select" id="location">
+            <option value="">Select State</option>
+            <option value="johor">Johor</option>
+            <option value="kedah">Kedah</option>
+            <option value="kelantan">Kelantan</option>
+            <option value="melaka">Melaka </option>
+            <option value="negeri">Negeri Sembilan</option>
+            <option value="pahang">Pahang</option>
+            <option value="perak">Perak</option>
+            <option value="perlis">Perlis</option>
+            <option value="pulaupinang">Pulau Pinang </option>
+            <option value="negerisembilan">Negeri Sembilan</option>
+            <option value="sabah">Sabah</option>
+            <option value="sarawak">Sarawak</option>
+            <option value="terengganu">Terengganu</option>
+        </select>
     </div>
 
     <button class="btn btn-success mt-3" type="submit">Donate</button>
