@@ -29,13 +29,25 @@ class Blockchain:
 
 blockchain = Blockchain()
 
+used_codes_file = "used_codes.txt"
+
+def load_used_codes():
+    try:
+        with open(used_codes_file, "r") as f:
+            codes = set(line.strip() for line in f if line.strip())
+    except FileNotFoundError:
+        codes = set()
+    return codes
+
+def save_used_code(code):
+    with open(used_codes_file, "a") as f:
+        f.write(code + "\n")
+
+used_codes = load_used_codes()
+
 @app.route("/")
 def about():
     return render_template("about.html")
-
-
-
-
 
 @app.route("/donate", methods=["GET", "POST"])
 def donate():
@@ -98,38 +110,58 @@ def donate():
         food_balance=blockchain.food_balance,
     )
 
-used_codes = set()
-
 @app.route("/request", methods=["GET", "POST"])
 def request_help():
+    global used_codes
     if request.method == "POST":
         verification_code = request.form.get("verification_code", "").strip()
 
-        # Check if code is correct
-        if verification_code != "1234" and verification_code != "5678":
-            flash("Invalid verification code. You cannot proceed.", "danger")
-            return redirect(url_for("request_help"))
-
-        # Check if code is already used
-        if verification_code in used_codes:
+        if verification_code not in ("12356", "65321"):
+            flash("Invalid verification code.", "danger")
+        elif verification_code in used_codes:
             flash("This verification code has already been used.", "danger")
-            return redirect(url_for("request_help"))
+        else:
+            used_codes.add(verification_code)
+            save_used_code(verification_code)
 
-        # Mark code as used
-        used_codes.add(verification_code)
+            if verification_code == "123456":
+                if blockchain.money_balance >= 100:
+                    blockchain.money_balance -= 100
+                    flash("RM100 deducted from money donations.", "success")
+                else:
+                    flash("Insufficient money balance.", "danger")
 
-        # ... rest of your existing logic for money or food request
+            elif verification_code == "654321":
+                total_food = sum(blockchain.food_balance.values())
+                if total_food >= 2:
+                    qty_to_deduct = 2
+                    for food_type in list(blockchain.food_balance.keys()):
+                        available = blockchain.food_balance[food_type]
+                        if available >= qty_to_deduct:
+                            blockchain.food_balance[food_type] -= qty_to_deduct
+                            qty_to_deduct = 0
+                            break
+                        else:
+                            blockchain.food_balance[food_type] = 0
+                            qty_to_deduct -= available
+                    flash("2 units of food deducted.", "success")
+                else:
+                    flash("Insufficient food balance.", "danger")
 
-        # (your existing request handling code here)
+        # IMPORTANT: Just render the template without redirect!
+        return render_template(
+            "request.html",
+            money_balance=blockchain.money_balance,
+            food_balance=blockchain.food_balance,
+        )
 
-        return redirect(url_for("request_help"))
-
-    # GET
+    # GET request
     return render_template(
         "request.html",
         money_balance=blockchain.money_balance,
         food_balance=blockchain.food_balance,
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
