@@ -25,11 +25,11 @@
         <label>Food Type</label>
         <!-- <input type="text" name="food_type" class="form-control"> -->
          <select name="food_type" class="form-select" id="food_type">
-            <option value="">Select State</option>
-            <option value="rice">Rice</option>
-            <option value="oil">Vegetable Oil</option>
-            <option value="beans">Lentils or beans</option>
-            <option value="salt">Salt </option>
+            <option value="">Select Food</option>
+            <option value="Rice">Rice</option>
+            <option value="Vegetable Oil">Vegetable Oil</option>
+            <option value="Lentils or beans">Lentils or beans</option>
+            <option value="Salt">Salt </option>
         </select>
         <label class="mt-2">Quantity</label>
         <input type="number" name="quantity" class="form-control" id="quantity">
@@ -42,7 +42,7 @@
 
 <!-- Your existing donation form here -->
 
-<h2>Donation and Request History</h2>
+<!-- <h2>Donation and Request History</h2>
 <table cellpadding="5" cellspacing="0" style="width:100%; max-width:700px; margin:auto;">
     <thead>
         <tr style="background-color:#4CAF50; color:white;">
@@ -74,12 +74,42 @@
         </tr>
         {% endfor %}
     </tbody>
-</table>
+</table> -->
 
 
-<h4 class="mt-5">Current Balances</h4>
-<p>Money: RM{{ money_balance }}</p>
-<p>Food: {{ food_balance }}</p>
+
+
+<h2 style="color:#333; text-align:center; margin-bottom:20px;">Current Balances</h2>
+
+<div style="max-width:600px; margin:auto; padding:15px; background:#f9f9f9; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+    <p style="font-size:18px; margin-bottom:10px;">
+        <strong>Money:</strong> 
+        <span style="color:green; font-weight:bold;">RM{{ money_balance }}</span>
+    </p>
+
+    <h3 style="margin-top:15px; margin-bottom:10px; color:#4CAF50;">Food Inventory</h3>
+    <table style="width:100%; border-collapse:collapse; text-align:center; background:white; border-radius:8px; overflow:hidden;">
+        <thead>
+            <tr style="background-color:#4CAF50; color:white;">
+                <th style="padding:8px;">Food Type</th>
+                <th style="padding:8px;">Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for food, qty in food_balance.items() %}
+            <tr style="border-bottom:1px solid #ddd;">
+                <td style="padding:8px;">{{ food.title() }}</td>
+                <td style="padding:8px;">{{ qty }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2" style="padding:8px; color:#999;">No food available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 
 <script>
 document.getElementById("donationType").addEventListener("change", function(){

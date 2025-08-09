@@ -98,67 +98,33 @@ def donate():
         food_balance=blockchain.food_balance,
     )
 
+used_codes = set()
+
 @app.route("/request", methods=["GET", "POST"])
 def request_help():
     if request.method == "POST":
-        request_type = request.form.get("request_type")
+        verification_code = request.form.get("verification_code", "").strip()
 
-        if not request_type:
-            flash("Request type is required.", "danger")
+        # Check if code is correct
+        if verification_code != "1234" and verification_code != "5678":
+            flash("Invalid verification code. You cannot proceed.", "danger")
             return redirect(url_for("request_help"))
 
-        # MONEY REQUEST
-        if request_type == "money":
-            amount_str = request.form.get("amount", "").strip()
-            print("DEBUG: Raw amount entered ->", repr(amount_str))
+        # Check if code is already used
+        if verification_code in used_codes:
+            flash("This verification code has already been used.", "danger")
+            return redirect(url_for("request_help"))
 
-            if not amount_str:
-                flash("Please enter a valid amount greater than zero.", "danger")
-                return redirect(url_for("request_help"))
+        # Mark code as used
+        used_codes.add(verification_code)
 
-            try:
-                cleaned_amount = amount_str.replace(",", "").replace("RM", "").replace("$", "").strip()
-                print("DEBUG: Cleaned amount ->", repr(cleaned_amount))
+        # ... rest of your existing logic for money or food request
 
-                amount = float(cleaned_amount)
-                if amount <= 0:
-                    raise ValueError
-
-                blockchain.money_balance -= amount
-                flash("Money Request Approved!", "success")
-
-            except ValueError:
-                flash("Please enter a valid amount greater than zero.", "danger")
-
-        # FOOD REQUEST
-        elif request_type == "food":
-            food_type = request.form.get("food_type", "").strip()
-            quantity_str = request.form.get("quantity", "").strip()
-    
-            if not food_type or not quantity_str:
-                flash("Please enter food type, quantity.", "danger")
-                return redirect(url_for("request_help"))
-
-            try:
-                quantity = int(quantity_str)
-                if quantity <= 0:
-                    raise ValueError
-                if (
-                    food_type in blockchain.food_balance
-                    and quantity <= blockchain.food_balance[food_type]
-                ):
-                    blockchain.food_balance[food_type] -= quantity
-                    flash(f"Food request approved: {quantity} x {food_type}!", "success")
-                else:
-                    flash("Not enough food available!", "danger")
-            except (ValueError, TypeError):
-                flash("Please enter a valid quantity greater than zero.", "danger")
-
-        else:
-            flash("Invalid request type selected.", "danger")
+        # (your existing request handling code here)
 
         return redirect(url_for("request_help"))
 
+    # GET
     return render_template(
         "request.html",
         money_balance=blockchain.money_balance,

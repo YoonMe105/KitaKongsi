@@ -3,55 +3,86 @@
 <div style="text-align: center; margin-top: 20px;">
   <img src="{{ url_for('static', filename='img/kitakongsi.png') }}" alt="logo1" />
 </div>
+
 <h2>Request Help</h2>
+
 <form method="post" class="mt-4">
+    <!-- Verification Code -->
+    <div class="mb-3">
+        <label>Enter Verification Code</label>
+        <input type="text" name="verification_code" class="form-control" required>
+        {% if error %}
+            <div style="color:red; margin-top:5px;">{{ error }}</div>
+        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="color: {% if category == 'danger' %}red{% else %}green{% endif %}; margin-top:5px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Request Type -->
     <div class="mb-3">
         <label>Request Type</label>
-        <select name="request_type" class="form-select" id="requestType">
+        <select name="request_type" class="form-select" id="requestType" required>
+            <option value="">-- Select --</option>
             <option value="money">Money</option>
             <option value="food">Food</option>
         </select>
     </div>
 
-    <div id="moneyRequest" class="mb-3">
+    <!-- Money Request -->
+    <div id="moneyRequest" class="mb-3 d-none">
         <label>Amount</label>
-        <input type="number" name="amount" step="0.01" class="form-control">
+        <input type="text" class="form-control" value="RM100 (fixed)" readonly>
     </div>
 
+    <!-- Food Request -->
     <div id="foodRequest" class="mb-3 d-none">
         <label>Food Type</label>
-        <input type="text" name="food_type" class="form-control">
+        <input type="text" name="food_type" class="form-control" placeholder="Enter food type">
         <label class="mt-2">Quantity</label>
-        <input type="number" name="quantity" class="form-control">
+        <input type="text" class="form-control" value="2 kg (fixed)" readonly>
     </div>
 
     <button class="btn btn-primary mt-3" type="submit">Request</button>
 </form>
 
-<h4 class="mt-5">Current Balances</h4>
-<table cellpadding="5" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Type</th>
-            <th>Amount</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Money balance row -->
-        <tr>
-            <td>Money</td>
-            <td>{{ money_balance }} RM</td>
-        </tr>
-        <!-- Food balance rows -->
-        <tr>
-            <td>Food</td>
-            <td>{{ food_balance }}</td>
-        </tr>
-    </tbody>
-</table>
+<!-- Current Balances -->
+<h2 style="color:#333; text-align:center; margin-bottom:20px;">Current Balances</h2>
 
-<!-- <p>Money: {{ money_balance }}</p>
-<p>Food: {{ food_balance }}</p> -->
+<div style="max-width:600px; margin:auto; padding:15px; background:#f9f9f9; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+    <p style="font-size:18px; margin-bottom:10px;">
+        <strong>Money:</strong> 
+        <span style="color:green; font-weight:bold;">RM{{ money_balance }}</span>
+    </p>
+
+    <h3 style="margin-top:15px; margin-bottom:10px; color:#4CAF50;">Food Inventory</h3>
+    <table style="width:100%; border-collapse:collapse; text-align:center; background:white; border-radius:8px; overflow:hidden;">
+        <thead>
+            <tr style="background-color:#4CAF50; color:white;">
+                <th style="padding:8px;">Food Type</th>
+                <th style="padding:8px;">Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for food, qty in food_balance.items() %}
+            <tr style="border-bottom:1px solid #ddd;">
+                <td style="padding:8px;">{{ food.title() }}</td>
+                <td style="padding:8px;">{{ qty }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2" style="padding:8px; color:#999;">No food available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 <script>
 document.getElementById("requestType").addEventListener("change", function(){
