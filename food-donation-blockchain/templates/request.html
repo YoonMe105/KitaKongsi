@@ -23,14 +23,52 @@
         <input type="text" name="food_type" class="form-control">
         <label class="mt-2">Quantity</label>
         <input type="number" name="quantity" class="form-control">
+        <label for="location">Location</label>
+        <select name="location" class="form-select" id="location">
+            <option value="">Select State</option>
+            <option value="johor">Johor</option>
+            <option value="kedah">Kedah</option>
+            <option value="kelantan">Kelantan</option>
+            <option value="melaka">Melaka </option>
+            <option value="negeri">Negeri Sembilan</option>
+            <option value="pahang">Pahang</option>
+            <option value="perak">Perak</option>
+            <option value="perlis">Perlis</option>
+            <option value="pulaupinang">Pulau Pinang </option>
+            <option value="negerisembilan">Negeri Sembilan</option>
+            <option value="sabah">Sabah</option>
+            <option value="sarawak">Sarawak</option>
+            <option value="terengganu">Terengganu</option>
+        </select>
     </div>
 
     <button class="btn btn-primary mt-3" type="submit">Request</button>
 </form>
 
 <h4 class="mt-5">Current Balances</h4>
-<p>Money: {{ money_balance }}</p>
-<p>Food: {{ food_balance }}</p>
+<table cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Money balance row -->
+        <tr>
+            <td>Money</td>
+            <td>{{ money_balance }} RM</td>
+        </tr>
+        <!-- Food balance rows -->
+        <tr>
+            <td>Food</td>
+            <td>{{ food_balance }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- <p>Money: {{ money_balance }}</p>
+<p>Food: {{ food_balance }}</p> -->
 
 <script>
 document.getElementById("requestType").addEventListener("change", function(){

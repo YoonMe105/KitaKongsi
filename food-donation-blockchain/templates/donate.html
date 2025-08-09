@@ -17,17 +17,15 @@
 
     <div id="moneyFields" class="mb-3">
         <label>Amount</label>
-        <input type="number" name="amount" step="0.01" class="form-control">
+        <input type="number" name="amount" step="0.01" class="form-control" id="amount">
+        
     </div>
 
     <div id="foodFields" class="mb-3 d-none">
         <label>Food Type</label>
         <input type="text" name="food_type" class="form-control">
         <label class="mt-2">Quantity</label>
-        <input type="number" name="quantity" class="form-control">
-    </div>
-
-    <div class="mb-3"> 
+        <input type="number" name="quantity" class="form-control" id="quantity">
         <label for="location">Location</label>
         <select name="location" class="form-select" id="location">
             <option value="">Select State</option>
@@ -46,6 +44,8 @@
             <option value="terengganu">Terengganu</option>
         </select>
     </div>
+
+
 
     <button class="btn btn-success mt-3" type="submit">Donate</button>
 </form>
