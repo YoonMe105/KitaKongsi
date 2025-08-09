@@ -13,18 +13,29 @@ class Blockchain:
         self.money_balance += amount
         print(f"DEBUG: Money donated added. New balance: {self.money_balance}")
 
-    def add_food_donation(self, food_type, quantity, location):
+    def add_food_donation(self, food_type, quantity, location=None):
         if food_type in self.food_balance:
             self.food_balance[food_type] += quantity
         else:
             self.food_balance[food_type] = quantity
-        print(f"DEBUG: Food donated added. {quantity} x {food_type} at {location}")
+        print(f"DEBUG: Food donated added. {quantity} x {food_type}")
+
+    def history():
+        all_transactions = []
+        for block in blockchain.chain:
+            for tx in block.transactions:
+                all_transactions.append(tx)
+        return render_template("history.html", transactions=all_transactions)
 
 blockchain = Blockchain()
 
 @app.route("/")
 def about():
     return render_template("about.html")
+
+
+
+
 
 @app.route("/donate", methods=["GET", "POST"])
 def donate():
@@ -61,17 +72,16 @@ def donate():
         elif donation_type == "food":
             food_type = request.form.get("food_type", "").strip()
             quantity_str = request.form.get("quantity", "").strip()
-            location = request.form.get("location", "").strip()
 
-            if not food_type or not quantity_str or not location:
-                flash("Please enter food type, quantity, and location.", "danger")
+            if not food_type or not quantity_str:
+                flash("Please enter food type, quantity.", "danger")
                 return redirect(url_for("donate"))
 
             try:
                 quantity = int(quantity_str)
                 if quantity <= 0:
                     raise ValueError
-                blockchain.add_food_donation(food_type, quantity, location)
+                blockchain.add_food_donation(food_type, quantity)
                 flash("Thank you for donating food!", "success")
             except (ValueError, TypeError):
                 flash("Please enter a valid quantity greater than zero.", "danger")
@@ -124,10 +134,9 @@ def request_help():
         elif request_type == "food":
             food_type = request.form.get("food_type", "").strip()
             quantity_str = request.form.get("quantity", "").strip()
-            location = request.form.get("location", "").strip()
-
-            if not food_type or not quantity_str or not location:
-                flash("Please enter food type, quantity, and location.", "danger")
+    
+            if not food_type or not quantity_str:
+                flash("Please enter food type, quantity.", "danger")
                 return redirect(url_for("request_help"))
 
             try:
@@ -139,7 +148,7 @@ def request_help():
                     and quantity <= blockchain.food_balance[food_type]
                 ):
                     blockchain.food_balance[food_type] -= quantity
-                    flash(f"Food request approved: {quantity} x {food_type} sent to {location}!", "success")
+                    flash(f"Food request approved: {quantity} x {food_type}!", "success")
                 else:
                     flash("Not enough food available!", "danger")
             except (ValueError, TypeError):

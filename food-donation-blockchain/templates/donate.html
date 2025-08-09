@@ -23,26 +23,16 @@
 
     <div id="foodFields" class="mb-3 d-none">
         <label>Food Type</label>
-        <input type="text" name="food_type" class="form-control">
+        <!-- <input type="text" name="food_type" class="form-control"> -->
+         <select name="food_type" class="form-select" id="food_type">
+            <option value="">Select State</option>
+            <option value="rice">Rice</option>
+            <option value="oil">Vegetable Oil</option>
+            <option value="beans">Lentils or beans</option>
+            <option value="salt">Salt </option>
+        </select>
         <label class="mt-2">Quantity</label>
         <input type="number" name="quantity" class="form-control" id="quantity">
-        <label for="location">Location</label>
-        <select name="location" class="form-select" id="location">
-            <option value="">Select State</option>
-            <option value="johor">Johor</option>
-            <option value="kedah">Kedah</option>
-            <option value="kelantan">Kelantan</option>
-            <option value="melaka">Melaka </option>
-            <option value="negeri">Negeri Sembilan</option>
-            <option value="pahang">Pahang</option>
-            <option value="perak">Perak</option>
-            <option value="perlis">Perlis</option>
-            <option value="pulaupinang">Pulau Pinang </option>
-            <option value="negerisembilan">Negeri Sembilan</option>
-            <option value="sabah">Sabah</option>
-            <option value="sarawak">Sarawak</option>
-            <option value="terengganu">Terengganu</option>
-        </select>
     </div>
 
 
@@ -50,8 +40,45 @@
     <button class="btn btn-success mt-3" type="submit">Donate</button>
 </form>
 
+<!-- Your existing donation form here -->
+
+<h2>Donation and Request History</h2>
+<table cellpadding="5" cellspacing="0" style="width:100%; max-width:700px; margin:auto;">
+    <thead>
+        <tr style="background-color:#4CAF50; color:white;">
+            <th>No.</th>
+            <th>Type</th>
+            <th>Details</th>
+            <th>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tx in transactions %}
+        <tr style="background-color: white">
+            <td>{{ loop.index }}</td>
+            <td>{{ tx.type.replace('_', ' ').title() }}</td>
+            <td>
+                {% if tx.type == 'money_donation' or tx.type == 'money_request' %}
+                    Amount: RM {{ "%.2f"|format(tx.amount) }}
+                {% elif tx.type == 'food_donation' or tx.type == 'food_request' %}
+                    Food: {{ tx.food_type }}, Quantity: {{ tx.quantity }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ tx.timestamp }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" style="text-align:center;">No transactions found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
 <h4 class="mt-5">Current Balances</h4>
-<p>Money: {{ money_balance }}</p>
+<p>Money: RM{{ money_balance }}</p>
 <p>Food: {{ food_balance }}</p>
 
 <script>
