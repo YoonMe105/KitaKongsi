@@ -28,7 +28,7 @@
     <!-- Request Type -->
     <div class="mb-3">
         <label>Request Type</label>
-        <select name="request_type" class="form-select" id="requestType" required>
+        <select name="request_type" class="form-select" id="request_type" required>
             <option value="">-- Select --</option>
             <option value="money">Money</option>
             <option value="food">Food</option>
@@ -85,9 +85,35 @@
 </div>
 
 <script>
-document.getElementById("requestType").addEventListener("change", function(){
-    document.getElementById("moneyRequest").classList.toggle("d-none", this.value !== "money");
-    document.getElementById("foodRequest").classList.toggle("d-none", this.value !== "food");
-});
+// document.getElementById("requestType").addEventListener("change", function(){
+//     document.getElementById("moneyRequest").classList.toggle("d-none", this.value !== "money");
+//     document.getElementById("foodRequest").classList.toggle("d-none", this.value !== "food");
+// });
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const requestTypeSelect = document.getElementById("request_type");
+        const moneyRequestDiv = document.getElementById("moneyRequest");
+        const foodRequestDiv = document.getElementById("foodRequest");
+
+        function toggleRequestFields() {
+            const selected = requestTypeSelect.value;
+            moneyRequestDiv.classList.add("d-none");
+            foodRequestDiv.classList.add("d-none");
+
+            if (selected === "money") {
+                moneyRequestDiv.classList.remove("d-none");
+            } else if (selected === "food") {
+                foodRequestDiv.classList.remove("d-none");
+            }
+        }
+
+        // Initial toggle in case of pre-filled form
+        toggleRequestFields();
+
+        // Listen for changes
+        requestTypeSelect.addEventListener("change", toggleRequestFields);
+    });
+
 </script>
 {% endblock %}

@@ -112,26 +112,25 @@ def donate():
 
 @app.route("/request", methods=["GET", "POST"])
 def request_help():
-    global used_codes
+    global used_codes 
+    
     if request.method == "POST":
+        request_type = request.form.get("request_type")
         verification_code = request.form.get("verification_code", "").strip()
 
-        if verification_code not in ("12356", "65321"):
-            flash("Invalid verification code.", "danger")
-        elif verification_code in used_codes:
-            flash("This verification code has already been used.", "danger")
-        else:
+        if verification_code in ("1879", "1258") and verification_code not in used_codes:
             used_codes.add(verification_code)
             save_used_code(verification_code)
+            print(used_codes)
 
-            if verification_code == "123456":
+            if request_type == "money":
                 if blockchain.money_balance >= 100:
                     blockchain.money_balance -= 100
                     flash("RM100 deducted from money donations.", "success")
                 else:
                     flash("Insufficient money balance.", "danger")
 
-            elif verification_code == "654321":
+            elif request_type == "food":
                 total_food = sum(blockchain.food_balance.values())
                 if total_food >= 2:
                     qty_to_deduct = 2
@@ -147,6 +146,11 @@ def request_help():
                     flash("2 units of food deducted.", "success")
                 else:
                     flash("Insufficient food balance.", "danger")
+        elif verification_code in used_codes:
+            print(verification_code)
+            flash("This verification code has already been used.", "danger")
+        elif verification_code not in ("22","24"):   
+            flash("Invalid verification code.", "danger")
 
         # IMPORTANT: Just render the template without redirect!
         return render_template(
